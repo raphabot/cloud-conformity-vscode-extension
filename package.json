@@ -1,7 +1,22 @@
 {
-	"name": "helloworld",
-	"displayName": "HelloWorld",
-	"description": "",
+	"name": "cc-template-scanner",
+	"displayName": "Cloud Conformity Template Scanner Extension",
+	"description": "Cloud Conformity Template Scanner Extension",
+	"author": {
+		"name": "Raphael Bottino",
+		"email": "raphabot@gmail.com"
+	},
+	"keywords": [
+		"Security",
+		"Cloud One",
+		"Cloud Conformity",
+		"CloudFormation",
+		"Trend Micro"
+	],
+	"publisher": "raphaelbottino",
+	"repository": {
+		"url": "https://github.com/raphabot/cloud-conformity-vscode-extension"
+	},
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.41.0"
