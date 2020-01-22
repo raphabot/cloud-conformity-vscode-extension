@@ -1,0 +1,76 @@
+{
+	"name": "helloworld",
+	"displayName": "HelloWorld",
+	"description": "",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.41.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:extension.scan",
+		"onCommand:extension.scanfilefromcontext"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.scan",
+				"title": "Cloud Conformity: Scan Current Open File As a CloudFormation Template."
+			},
+			{
+				"command": "extension.scanfilefromcontext",
+				"title": "Cloud Conformity: Scan Selected CloudFormation Template File"
+			}
+		],
+		"menus": {
+			"explorer/context": [{
+					"when": "resourceLangId == json || resourceLangId == yaml",
+					"command": "extension.scanfilefromcontext",
+					"group": "CC@1"
+			}]
+		},
+		"configuration": {
+			"title": "Cloud One Conformity Template Scanner",
+			"properties": {
+				"cc.apikey": {
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null,
+					"description": "Cloud Conformity API Key"
+				},
+				"cc.region": {
+					"type": "string",
+					"default": "us-west-2",
+					"description": "Cloud Conformity endpoint region."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^5.2.7",
+		"@types/node": "^12.11.7",
+		"@types/vscode": "^1.41.0",
+		"glob": "^7.1.5",
+		"mocha": "^6.2.2",
+		"typescript": "^3.6.4",
+		"tslint": "^5.20.0",
+		"vscode-test": "^1.2.2"
+	},
+	"dependencies": {
+		"axios": "^0.19.1",
+		"console.table": "^0.10.0"
+	}
+}
