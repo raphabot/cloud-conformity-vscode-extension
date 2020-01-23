@@ -38,11 +38,12 @@ export async function scan(key:string, region:string, content: string) {
     }
   }
   catch(err){
+    let message = "Weird error!";
     console.error(err);
     if ((err.response) && (err.response.data)){
-      return err.response.data;
+      message = JSON.stringify(err.response.data, null, 2);
     }
-    return "Weird error!";
+    return message;
   }
 }
 

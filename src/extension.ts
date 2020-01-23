@@ -61,7 +61,7 @@ const scanTemplate = async (key:string, region:string, template: string) => {
 		"message": "error"
 	};
 	const scan = await templateScanner.scan(key, region, template);
-	result.message = scan;
+	result.message = String(scan);
 	return result;
 };
 
