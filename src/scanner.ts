@@ -23,7 +23,7 @@ const generateRequest = (key:string, region:string, content: string) => {
   };
 };
 
-export async function scan(key:string, region:string, content: string) {
+export async function scan(key:string, parsertype:string, region:string, content: string) {
   try{
     if (isJsonString(content)){
       let message = "";
@@ -32,7 +32,22 @@ export async function scan(key:string, region:string, content: string) {
         message = "File is not a valid template.";
       }
       else {
-        message = parser(JSON.stringify(res.data, null, 2));
+        let data = res.data.data;
+        data = trim(data);
+        switch (parsertype) {
+          case "table":
+            message = parseToTable(data);
+            break;
+          case "csv":
+            message = parseToCsv(data);
+            break;
+          case "json":
+            message = JSON.stringify(data, null, 2);
+            break;
+          default:
+            message = parseToTable(data);
+            break;
+        }
       }
       return message;
     }
@@ -57,18 +72,37 @@ const isJsonString = (str: string) => {
   return true;
 };
 
-const parser = (cc_output: string) => {
-
-  const results = JSON.parse(cc_output).data;
-  const errors = results.map(function(entry: any) { 
+const trim = (data: [object]) => {
+  const errors = data.map(function(entry: any) { 
     return {
       "resource": entry.attributes.resource,
       "risk": entry.attributes['pretty-risk-level'],
       "message": entry.attributes.message,
     };
   });
+  const info = errors.reduce(function(results: any, entry: any){
+    let total = results[entry.risk];
+    if (total){
+      total+=1;
+    }
+    else{
+      total = 1;
+    }
+    results[entry.risk] = total;
+    return results;
+  }, {});
+
+  return {
+    "info": info,
+    "errors": errors
+  };
+};
+
+const parseToTable = (results: any) => {
   const cTable = require('console.table');
-  const table = cTable.getTable(errors.sort(sortByHigherRisk).reverse());
+  let table = cTable.getTable(results.info);
+  table += "\n\n";
+  table += cTable.getTable(results.errors);
   return table;
 };
 
@@ -104,4 +138,30 @@ const riskToScale = (risk: string) =>{
       break;
   }
   return scale;
+};
+
+const parseToCsv = (results: any) => {
+  const { Parser } = require('json2csv');
+  try {
+    let fields = ['risk', 'quantity'];
+    let csv = "risk,quantity\n";
+    csv += parseInfoToCsv(results.info);
+    csv += "\n\n";
+    const parser = new Parser();
+    csv += parser.parse(results.errors);
+    return csv;
+  } catch (err) {
+    console.error(err);
+    return err;
+  }
+};
+
+const parseInfoToCsv = (info: object) => {
+  let csv = "";
+  const keys = Object.keys(info);
+  const values = Object.values(info);
+  for (let i = 0; i < keys.length; i++){
+    csv += keys[i] + "," + values[i] + "\n";
+  }
+  return csv;
 };

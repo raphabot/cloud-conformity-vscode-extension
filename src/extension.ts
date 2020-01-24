@@ -3,6 +3,8 @@
 import * as vscode from 'vscode';
 import * as templateScanner from './scanner';
 
+const VALID_OUTPUTS = ["table", "json", "csv"];
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -27,40 +29,46 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 const logic = async (path: string) => {
-	// The code you place here will be executed every time your command is executed
-	const config = loadConfig();
-	if (!config){
+	try {
+		const config = loadConfig();
+		if (!isConfigValid(config)){
+			const message = "Extension is not configured.";
+			console.log(message);
+			vscode.window.showInformationMessage(message);
+		}
+		else if (path === null || path === ""){
+			console.log(path);
+			const message = "Something went wrong.";
+			console.log(message);
+			vscode.window.showInformationMessage(message);
+		}
+		// Extension is configured.
+		else{
+			// Display a message box to the user
+			const template = await fileContentFromPath(path);
+			vscode.window.showInformationMessage("Checking...");
+			let result = await scanTemplate(config.key, config.output, config.region, template);
+			vscode.window.showInformationMessage("Template scanned. ");
+			let outputChannel = vscode.window.createOutputChannel("output");
+			outputChannel.appendLine(result.message);
+			outputChannel.show(true);
+		}
+	} catch (error) {
 		const message = "Extension is not configured.";
-		console.log(message);
+		error.log(message);
 		vscode.window.showInformationMessage(message);
 	}
-	else if (path === null || path === ""){
-		console.log(path);
-		const message = "Something went wrong.";
-		console.log(message);
-		vscode.window.showInformationMessage(message);
-	}
-	// Extension is configured.
-	else{
-		// Display a message box to the user
-		const template = await fileContentFromPath(path);
-		vscode.window.showInformationMessage("Checking...");
-		let result = await scanTemplate(config.key, config.region, template);
-		vscode.window.showInformationMessage("Template scanned. ");
-		let outputChannel = vscode.window.createOutputChannel("output");
-		outputChannel.appendLine(result.message);
-		outputChannel.show(true);
-	}
+	
 };
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
-const scanTemplate = async (key:string, region:string, template: string) => {
+const scanTemplate = async (key:string, output:string, region:string, template: string) => {
 	let result = {
 		"message": "error"
 	};
-	const scan = await templateScanner.scan(key, region, template);
+	const scan = await templateScanner.scan(key, output, region, template);
 	result.message = String(scan);
 	return result;
 };
@@ -80,14 +88,32 @@ const fileContentFromPath = async (path: string) => {
 };
 
 const loadConfig = () => {
-	const config = vscode.workspace.getConfiguration('cc');
-	const key = config.get('apikey');
-	const region = config.get('region');
-	if ((key && key !== undefined) && (region && region !== undefined)){
-		return {
-			key: String(key),
-			region: String(region)
-		};
+	try {
+		const config = vscode.workspace.getConfiguration('cc');
+		const key = config.get('apikey');
+		const region = config.get('region');
+		const output = config.get('output');
+		if ((key && key !== undefined) && (region && region !== undefined) && (output && output !== undefined)){
+			return {
+				key: String(key),
+				region: String(region),
+				output: String(output)
+			};
+		}
+		else{
+			throw new Error();
+		}
+	} catch (error) {
+		throw error;
 	}
-	return false;
+};
+
+const isConfigValid = (config: any) => {
+	if (!config){
+		return false;		
+	}
+	if (!VALID_OUTPUTS.includes(config.output)){
+		return false;
+	}
+	return true;
 };

@@ -41,11 +41,13 @@
 			}
 		],
 		"menus": {
-			"explorer/context": [{
+			"explorer/context": [
+				{
 					"when": "resourceLangId == json || resourceLangId == yaml",
 					"command": "extension.scanfilefromcontext",
 					"group": "CC@1"
-			}]
+				}
+			]
 		},
 		"configuration": {
 			"title": "Cloud One Conformity Template Scanner",
@@ -62,6 +64,11 @@
 					"type": "string",
 					"default": "us-west-2",
 					"description": "Cloud Conformity endpoint region."
+				},
+				"cc.output": {
+					"type": "string",
+					"default": "table",
+					"description": "Desired output method. Valid options: \"table\", \"json\" or \"csv\". Defaults to \"table\"."
 				}
 			}
 		}
@@ -86,6 +93,7 @@
 	},
 	"dependencies": {
 		"axios": "^0.19.1",
-		"console.table": "^0.10.0"
+		"console.table": "^0.10.0",
+		"json2csv": "^4.5.4"
 	}
 }

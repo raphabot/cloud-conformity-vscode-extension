@@ -24,12 +24,17 @@ This extension contributes the following settings:
 
 * `cc.apikey`: a string with your Cloud Conformity apikey
 * `cc.region`: Defaults to `us-west-2`. Change it to your Cloud Conformity used endpoint. 
+* `cc.output`: Defaults to `table`. Valid options are `table`, `json` or `csv`. 
 
 ## Known Issues
 
 It works only for JSON Templates right now.
 
 ## Release Notes
+
+### 0.0.3
+
+Support to different types of outputs. Added a summary of 
 
 ### 0.0.2
 
