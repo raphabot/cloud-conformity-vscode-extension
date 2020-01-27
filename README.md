@@ -32,6 +32,10 @@ It works only for JSON Templates right now.
 
 ## Release Notes
 
+### 0.0.4
+
+Support for YAML based templates.
+
 ### 0.0.3
 
 Support to different types of outputs. Added a summary of 

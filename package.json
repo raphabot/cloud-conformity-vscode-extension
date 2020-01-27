@@ -17,7 +17,7 @@
 	"repository": {
 		"url": "https://github.com/raphabot/cloud-conformity-vscode-extension"
 	},
-	"version": "0.0.2",
+	"version": "0.0.4",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
@@ -94,6 +94,7 @@
 	"dependencies": {
 		"axios": "^0.19.1",
 		"console.table": "^0.10.0",
+		"js-yaml": "^3.13.1",
 		"json2csv": "^4.5.4"
 	}
 }

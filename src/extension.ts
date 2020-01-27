@@ -104,6 +104,7 @@ const loadConfig = () => {
 			throw new Error();
 		}
 	} catch (error) {
+		console.error(error);
 		throw error;
 	}
 };

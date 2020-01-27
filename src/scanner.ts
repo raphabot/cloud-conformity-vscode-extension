@@ -1,4 +1,5 @@
 const axios = require('axios').default;
+const yaml = require('js-yaml');
 
 const generateRequest = (key:string, region:string, content: string) => {
   const REGION = region;
@@ -25,52 +26,45 @@ const generateRequest = (key:string, region:string, content: string) => {
 
 export async function scan(key:string, parsertype:string, region:string, content: string) {
   try{
-    if (isJsonString(content)){
-      let message = "";
-      const res = await axios(generateRequest(key, region, content));
-      if (res.data.data === undefined || res.data.data.length === 0){
-        message = "File is not a valid template.";
-      }
-      else {
-        let data = res.data.data;
-        data = trim(data);
-        switch (parsertype) {
-          case "table":
-            message = parseToTable(data);
-            break;
-          case "csv":
-            message = parseToCsv(data);
-            break;
-          case "json":
-            message = JSON.stringify(data, null, 2);
-            break;
-          default:
-            message = parseToTable(data);
-            break;
-        }
-      }
-      return message;
+    let message = "";
+    const res = await axios(generateRequest(key, region, content));
+    if (res.data.data === undefined || res.data.data.length === 0){
+      message = "File is not a valid template.";
     }
+    else {
+      let data = res.data.data;
+      data = trim(data);
+      switch (parsertype) {
+        case "table":
+          message = parseToTable(data);
+          break;
+        case "csv":
+          message = parseToCsv(data);
+          break;
+        case "json":
+          message = JSON.stringify(data, null, 2);
+          break;
+        default:
+          message = parseToTable(data);
+          break;
+      }
+    }
+    return message;
   }
   catch(err){
     let message = "Weird error!";
     console.error(err);
     if ((err.response) && (err.response.data)){
-      message = JSON.stringify(err.response.data, null, 2);
+      if (err.response.data.errors.length === 1){
+        message = err.response.data.errors[0].detail;
+      }
+      else{
+        message = JSON.stringify(err.response.data.errors, null, 2);
+      }
     }
     return message;
   }
 }
-
-const isJsonString = (str: string) => {
-  try {
-    JSON.parse(str);
-  } catch (err) {
-    console.error(err);
-    return false;
-  }
-  return true;
-};
 
 const trim = (data: [object]) => {
   const errors = data.map(function(entry: any) { 
