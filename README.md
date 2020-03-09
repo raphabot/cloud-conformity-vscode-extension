@@ -2,6 +2,8 @@
 
 This is a simple extension with a simple implementation of Cloud Conformity template scanner right from the IDE.
 
+![Extension working on VSCode](extension.gif)
+
 ## Features
 
 This extension has a really simple feature: a preventative measure to ensure your AWS infrastructure remains compliant by detecting risks in template files before they are launched into AWS.
