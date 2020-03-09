@@ -1,6 +1,6 @@
-# Cloud Conformity VSCode Extension
+# Non Official Cloud Conformity VSCode Extension
 
-This is a simple extension with a simple implementation of Cloud Conformity template scanner right from the IDE.
+This is a extension with a simple implementation of Cloud Conformity template scanner right from the IDE.
 
 ![Extension working on VSCode](extension.gif)
 
