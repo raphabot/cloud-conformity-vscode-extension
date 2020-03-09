@@ -1,21 +1,9 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as templateScanner from './scanner';
+import { CloudConformity } from 'cloud-conformity';
 
 const VALID_OUTPUTS = ["table", "json", "csv"];
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Cloud Conformity extension is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
 
 	context.subscriptions.push(vscode.commands.registerCommand('extension.scan', async () => {
 		const filePath = getOpenFilePath();
@@ -33,13 +21,13 @@ const logic = async (path: string) => {
 		const config = loadConfig();
 		if (!isConfigValid(config)){
 			const message = "Extension is not configured.";
-			console.log(message);
+			console.error(message);
 			vscode.window.showInformationMessage(message);
 		}
 		else if (path === null || path === ""){
 			console.log(path);
 			const message = "Something went wrong.";
-			console.log(message);
+			console.error(message);
 			vscode.window.showInformationMessage(message);
 		}
 		// Extension is configured.
@@ -47,15 +35,17 @@ const logic = async (path: string) => {
 			// Display a message box to the user
 			const template = await fileContentFromPath(path);
 			vscode.window.showInformationMessage("Checking...");
-			let result = await scanTemplate(config.key, config.output, config.region, template);
+			const cc = new CloudConformity(config.region, config.key);
+			let result = await scanTemplate(cc, config.output, template);
 			vscode.window.showInformationMessage("Template scanned. ");
 			let outputChannel = vscode.window.createOutputChannel("output");
 			outputChannel.appendLine(result.message);
 			outputChannel.show(true);
 		}
 	} catch (error) {
+		console.error(error);
 		const message = "Extension is not configured.";
-		error.log(message);
+		console.error(message);
 		vscode.window.showInformationMessage(message);
 	}
 	
@@ -64,13 +54,94 @@ const logic = async (path: string) => {
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
-const scanTemplate = async (key:string, output:string, region:string, template: string) => {
+const scanTemplate = async (cc: CloudConformity, outputType: string, template: string) => {
 	let result = {
 		"message": "error"
 	};
-	const scan = await templateScanner.scan(key, output, region, template);
-	result.message = String(scan);
+	const scan = await cc.scanACloudFormationTemplateAndReturAsArrays(template);
+	const trimmed = trimResults(scan.failure);
+	result.message = parseResult(trimmed, outputType);
 	return result;
+};
+
+const trimResults = (data: [object]) => {
+	console.log(data);
+  const errors = data.map(function(entry: any) { 
+    return {
+      "resource": entry.attributes.resource,
+      "risk": entry.attributes['pretty-risk-level'],
+      "message": entry.attributes.message,
+    };
+  });
+  const info = errors.reduce(function(results: any, entry: any){
+    let total = results[entry.risk];
+    if (total){
+      total+=1;
+    }
+    else{
+      total = 1;
+    }
+    results[entry.risk] = total;
+    return results;
+  }, {});
+
+  return {
+    "info": info,
+    "errors": errors
+  };
+};
+
+const parseResult = (data: any, outputType: string): string => {
+	let message = "";
+	switch (outputType) {
+		case "table":
+			message = parseToTable(data);
+			break;
+		case "csv":
+			message = parseToCsv(data);
+			break;
+		case "json":
+			message = JSON.stringify(data, null, 2);
+			break;
+		default:
+			message = parseToTable(data);
+			break;
+	}
+	return message;
+};
+
+const parseToTable = (results: any) => {
+  const cTable = require('console.table');
+  let table = cTable.getTable(results.info);
+  table += "\n\n";
+  table += cTable.getTable(results.errors);
+  return table;
+};
+
+const parseToCsv = (results: any) => {
+  const { Parser } = require('json2csv');
+  try {
+    let fields = ['risk', 'quantity'];
+    let csv = "risk,quantity\n";
+    csv += parseInfoToCsv(results.info);
+    csv += "\n\n";
+    const parser = new Parser();
+    csv += parser.parse(results.errors);
+    return csv;
+  } catch (err) {
+    console.error(err);
+    return err;
+  }
+};
+
+const parseInfoToCsv = (info: object) => {
+  let csv = "";
+  const keys = Object.keys(info);
+  const values = Object.values(info);
+  for (let i = 0; i < keys.length; i++){
+    csv += keys[i] + "," + values[i] + "\n";
+  }
+  return csv;
 };
 
 const getOpenFilePath = () => {

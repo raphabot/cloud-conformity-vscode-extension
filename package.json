@@ -17,7 +17,7 @@
 	"repository": {
 		"url": "https://github.com/raphabot/cloud-conformity-vscode-extension"
 	},
-	"version": "0.0.4",
+	"version": "0.1.0",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
@@ -74,10 +74,12 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
+		"vscode:prepublish": "webpack --mode production",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
@@ -87,12 +89,16 @@
 		"@types/vscode": "^1.41.0",
 		"glob": "^7.1.5",
 		"mocha": "^6.2.2",
-		"typescript": "^3.6.4",
+		"ts-loader": "^6.2.1",
 		"tslint": "^5.20.0",
-		"vscode-test": "^1.2.2"
+		"typescript": "^3.6.4",
+		"vscode-test": "^1.2.2",
+		"webpack": "^4.42.0",
+		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
 		"axios": "^0.19.1",
+		"cloud-conformity": "^1.0.12",
 		"console.table": "^0.10.0",
 		"js-yaml": "^3.13.1",
 		"json2csv": "^4.5.4"
