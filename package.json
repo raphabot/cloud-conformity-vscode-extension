@@ -24,6 +24,7 @@
 	"categories": [
 		"Other"
 	],
+	"icon": "images/icon.png",
 	"activationEvents": [
 		"onCommand:extension.scan",
 		"onCommand:extension.scanfilefromcontext"

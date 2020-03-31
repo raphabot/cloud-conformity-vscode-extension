@@ -2,7 +2,7 @@
 
 This is a extension with a simple implementation of Cloud Conformity template scanner right from the IDE.
 
-![Extension working on VSCode](extension.gif)
+![Extension working on VSCode](images/extension.gif)
 
 ## Features
 
@@ -10,15 +10,9 @@ This extension has a really simple feature: a preventative measure to ensure you
 
 More info about the scanner over [here](https://github.com/cloudconformity/documentation-api/blob/master/TemplateScanner.md).
 
-You can scan either the current open file through:
-> "Cloud Conformity: Scan Current Open File As a CloudFormation Template."
-
-You can scan any other template right-clicking the file and:
-> "Cloud Conformity: Scan Selected CloudFormation Template File"
-
 ## Requirements
 
-You *need* to configure your API Key and you *might* need to configuer the endpoint region, as it defaults to us-west-2. 
+You ***need*** to configure your API Key and you ***might*** need to configuer the endpoint region, as it defaults to us-west-2.  To do so, see the Extension Settings below:
 
 ## Extension Settings
 
@@ -28,24 +22,30 @@ This extension contributes the following settings:
 * `cc.region`: Defaults to `us-west-2`. Change it to your Cloud Conformity used endpoint. 
 * `cc.output`: Defaults to `table`. Valid options are `table`, `json` or `csv`. 
 
+If you need help on how to edit these settings, you can find more info [here](https://code.visualstudio.com/docs/getstarted/settings).
+
+## How to Use It?
+
+First, open VS Code Command Palette (⇧⌘P on Mac or Ctrl+⇧+P on Windows). Then:
+
+1 - You can scan the current open file through:
+> "Cloud Conformity: Scan Current Open File As a CloudFormation Template."
+
+2 - You can scan any other template right-clicking the file and selecting:
+> "Cloud Conformity: Scan Selected CloudFormation Template File"
+
+
 ## Known Issues
 
-It works only for JSON Templates right now.
+None. Please, open an issue if you find one!
 
 ## Release Notes
 
-### 0.0.4
+### 0.1.1
 
-Support for YAML based templates.
+- Adding an icon to the extension.
+- Better README.md
 
-### 0.0.3
+### 0.1.0
 
-Support to different types of outputs. Added a summary of 
-
-### 0.0.2
-
-Fixed output for 500 errors.
-
-### 0.0.1
-
-Initial release.
+- First public release
