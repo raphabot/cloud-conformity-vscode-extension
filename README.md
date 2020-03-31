@@ -1,3 +1,7 @@
+[![vsm-version](https://img.shields.io/visual-studio-marketplace/v/raphaelbottino.cc-template-scanner?style=flat&label=VS%20Marketplace&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=raphaelbottino.cc-template-scanner)
+[![Build Status](https://travis-ci.org/raphabot/cloud-conformity-vscode-extension.svg?branch=master)](https://travis-ci.org/raphabot/cloud-conformity-vscode-extension)
+[![Coverage Status](https://coveralls.io/repos/github/raphabot/cloud-conformity-vscode-extension/badge.svg?branch=master)](https://coveralls.io/github/raphabot/cloud-conformity-vscode-extension?branch=master)
+
 # Non Official Cloud Conformity VSCode Extension
 
 This is a extension with a simple implementation of Cloud Conformity template scanner right from the IDE.
