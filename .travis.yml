@@ -1,8 +1,10 @@
-sudo: false
-
 os:
   - osx
   - linux
+
+language: node_js
+node_js:
+  - 12
 
 before_install:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
@@ -16,4 +18,4 @@ install:
   - npm run vscode:prepublish
 
 script:
-  - npm test --silent
+  - npm test
