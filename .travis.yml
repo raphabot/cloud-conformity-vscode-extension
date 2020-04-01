@@ -27,6 +27,7 @@ install:
   - rm -f ./node_modules/.bin/which 
 
 script:
+  - vsce package
   - npm test --silent
 
 deploy:
