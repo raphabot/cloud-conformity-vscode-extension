@@ -1,13 +1,18 @@
-os:
-  - osx
-  - linux
-
 language: node_js
+
 node_js:
   - 12
 
+os:
+  - linux
+  - osx
+
 services:
   - xvfb
+
+branches:
+  only:
+  - master
 
 before_install:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
@@ -23,6 +28,4 @@ script:
 
 deploy:
   - provider: script
-    script: bash scripts/deploy.sh
-    on:
-      branch: master
+    script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
