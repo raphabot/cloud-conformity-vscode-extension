@@ -7,6 +7,9 @@ os:
   - linux
   - osx
 
+dist:
+  - xenial
+
 services:
   - xvfb
 
@@ -33,6 +36,6 @@ script:
 deploy:
   - provider: script
     script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
-    skip_cleanup: true
+    cleanup: false
     on:
       condition: "$TRAVIS_OS_NAME == osx"
