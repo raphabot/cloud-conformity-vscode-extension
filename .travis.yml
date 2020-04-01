@@ -34,4 +34,5 @@ deploy:
   - provider: script
     script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
     skip_cleanup: true
-    condition: "$TRAVIS_OS_NAME == osx"
+    on:
+      condition: "$TRAVIS_OS_NAME == osx"
