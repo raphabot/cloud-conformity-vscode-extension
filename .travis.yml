@@ -18,7 +18,7 @@ before_install:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
     fi
-  - npm install -g vsce webpack webpack-cli
+  - npm install -g vsce webpack webpack-cli typescript
 
 install:
   - npm install
@@ -32,5 +32,5 @@ script:
 
 deploy:
   - provider: script
-    script: vsce publish -p $VSCE_TOKEN
+    script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
     skip_cleanup: true
