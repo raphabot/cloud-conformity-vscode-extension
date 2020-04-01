@@ -22,10 +22,13 @@ before_install:
 install:
   - npm install
   - npm run vscode:prepublish
+  # https://github.com/travis-ci/travis-ci/issues/8813
+  - rm -f ./node_modules/.bin/which 
 
 script:
-  - npm test
+  - npm test --silent
 
 deploy:
   - provider: script
     script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
+    skip_cleanup: true
