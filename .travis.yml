@@ -32,5 +32,5 @@ script:
 
 deploy:
   - provider: script
-    script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
+    script: vsce publish -p $VSCE_TOKEN
     skip_cleanup: true
