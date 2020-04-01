@@ -30,12 +30,11 @@ install:
   - rm -f ./node_modules/.bin/which 
 
 script:
-  - vsce package
   - npm test --silent
 
 deploy:
   - provider: script
-    script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
+    script: vsce package && vsce publish -p $MARKET_KEY
     cleanup: false
     on:
       condition: "$TRAVIS_OS_NAME == osx"
