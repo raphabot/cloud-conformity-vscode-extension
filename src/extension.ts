@@ -111,12 +111,25 @@ const parseResult = (data: any, outputType: string): string => {
 };
 
 const parseToTable = (results: any) => {
-  const cTable = require('console.table');
-  let table = cTable.getTable(results.info);
-  table += "\n\n";
-  table += cTable.getTable(results.errors);
-  return table;
+	const Table = require('cli-table');
+	let infoTable = new Table();
+	Object.keys(results.info).forEach(key => {
+		let value = results.info[key];
+		infoTable.push({[key]: value});
+	});
+  let resultsTable = new Table({
+		head: ['Resource', 'Risk', 'Message']
+	});
+	results.errors.map( (error: any) => {
+		resultsTable.push([
+			error.resource,
+			error.risk,
+			error.message
+		]);
+	});
+  return infoTable.toString() + "\n\n" + resultsTable.toString();
 };
+
 
 const parseToCsv = (results: any) => {
   const { Parser } = require('json2csv');
