@@ -34,10 +34,10 @@ const logic = async (path: string) => {
 		else{
 			// Display a message box to the user
 			const template = await fileContentFromPath(path);
-			vscode.window.showInformationMessage("Checking...");
+			vscode.window.showInformationMessage("Scanning template...");
 			const cc = new CloudConformity(config.region, config.key);
 			let result = await scanTemplate(cc, config.output, template);
-			vscode.window.showInformationMessage("Template scanned. ");
+			vscode.window.showInformationMessage("Template scanned.");
 			let outputChannel = vscode.window.createOutputChannel("output");
 			outputChannel.appendLine(result.message);
 			outputChannel.show(true);
@@ -59,31 +59,42 @@ const scanTemplate = async (cc: CloudConformity, outputType: string, template: s
 		"message": "error"
 	};
 	const scan = await cc.scanACloudFormationTemplateAndReturAsArrays(template);
-	const trimmed = trimResults(scan.failure);
-	result.message = parseResult(trimmed, outputType);
+	// If there are findings
+	if (scan.failure.length){
+		const trimmed = trimResults(scan.failure);
+		result.message = parseResult(trimmed, outputType);
+	}
+	else {
+		result.message = "This is a Well-Architected template. Great job!";
+	}
 	return result;
 };
 
 const trimResults = (data: [object]) => {
 	console.log(data);
-  const errors = data.map(function(entry: any) { 
-    return {
-      "resource": entry.attributes.resource,
-      "risk": entry.attributes['pretty-risk-level'],
-      "message": entry.attributes.message,
-    };
-  });
-  const info = errors.reduce(function(results: any, entry: any){
-    let total = results[entry.risk];
-    if (total){
-      total+=1;
-    }
-    else{
-      total = 1;
-    }
-    results[entry.risk] = total;
-    return results;
-  }, {});
+	const errors = data
+		.map(function(entry: any) { 
+			return {
+				"resource": entry.attributes.resource,
+				"risk": entry.attributes['pretty-risk-level'],
+				"message": entry.attributes.message,
+			};
+		})
+		.sort(compare);
+	let info = errors.reduce(function(results: any, entry: any){
+		results[entry.risk] += 1;
+		return results;
+	}, {
+		'Extreme': 0,
+		'Very High': 0,
+		'High': 0,
+		'Medium': 0,
+		'Low': 0
+	});
+	//Remove any risk-type with 0 entries
+	info = Object.fromEntries(
+		Object.entries(info).filter(([risk, qty]) => qty !== 0)
+	);
 
   return {
     "info": info,
@@ -127,7 +138,7 @@ const parseToTable = (results: any) => {
 			error.message
 		]);
 	});
-  return infoTable.toString() + "\n\n" + resultsTable.toString();
+  return "Detections Summary\n" + infoTable.toString() + "\n\nDetails\n" + resultsTable.toString();
 };
 
 
@@ -201,4 +212,28 @@ const isConfigValid = (config: any) => {
 		return false;
 	}
 	return true;
+};
+
+const compare = (a: {resource: string; risk: string; message: string} , b: {resource: string; risk: string; message: string}): number => {
+	const ra = riskToNumber(a.risk);
+	const rb = riskToNumber(b.risk);
+	if ( ra <= rb){
+		return 1;
+	}
+	return -1;
+};
+
+const riskToNumber = (risk: string): number => {
+	switch (risk) {
+		case 'Extreme':
+			return 4;
+		case 'Very High':
+			return 3;
+		case 'High':
+			return 2;
+		case 'Medium':
+			return 1;
+		default:
+			return 0;
+	}
 };
