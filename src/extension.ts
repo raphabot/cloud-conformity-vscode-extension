@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { CloudConformity } from 'cloud-conformity';
 
 const VALID_OUTPUTS = ["table", "json", "csv"];
+const KB = require('./kb.json');
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -33,8 +34,20 @@ const logic = async (path: string) => {
 		// Extension is configured.
 		else{
 			// Display a message box to the user
-			const template = await fileContentFromPath(path);
 			vscode.window.showInformationMessage("Scanning template...");
+
+			// Check if Serverless Framework
+			if (checkIfServerlessFramework(path)){
+				path = getServerlessCloudFormationTemplate(path);
+				const fs = require("fs");
+				if (!fs.existsSync(path)){
+					const message = "You haven't packaged or deployed your Serverless application yet.";
+					vscode.window.showInformationMessage(message);
+					return;
+				}
+			}
+			console.log(path);
+			const template = await fileContentFromPath(path);
 			const cc = new CloudConformity(config.region, config.key);
 			let result = await scanTemplate(cc, config.output, template);
 			vscode.window.showInformationMessage("Template scanned.");
@@ -78,6 +91,7 @@ const trimResults = (data: [object]) => {
 				"resource": entry.attributes.resource,
 				"risk": entry.attributes['pretty-risk-level'],
 				"message": entry.attributes.message,
+				// "kb": getKBLink(entry)
 			};
 		})
 		.sort(compare);
@@ -129,13 +143,14 @@ const parseToTable = (results: any) => {
 		infoTable.push({[key]: value});
 	});
   let resultsTable = new Table({
-		head: ['Resource', 'Risk', 'Message']
+		head: ['Resource', 'Risk', 'Message']//, 'Knowledge Base']
 	});
 	results.errors.map( (error: any) => {
 		resultsTable.push([
 			error.resource,
 			error.risk,
-			error.message
+			error.message,
+			//error.kb
 		]);
 	});
   return "Detections Summary\n" + infoTable.toString() + "\n\nDetails\n" + resultsTable.toString();
@@ -176,7 +191,7 @@ const getOpenFilePath = () => {
 	return path;
 };
 
-const fileContentFromPath = async (path: string) => {
+const fileContentFromPath = async (path: string): Promise<string> => {
 	const fs = require('fs').promises;
 	const data = await fs.readFile(path, "utf8");
 	return data;
@@ -237,3 +252,52 @@ const riskToNumber = (risk: string): number => {
 			return 0;
 	}
 };
+
+const getKBLink = (check: any) => {
+	return KB.find((kb: { id: string; kb: string}) => kb.id === check.relationships.rule.data.id).kb;
+};
+
+const checkIfServerlessFramework = (filePath: string): boolean => {
+	const path = require('path');
+	const fileName = path.basename(filePath);
+	if ((fileName === 'serverless.yml') || (fileName === 'serverless.yaml')){
+		return true;
+	}
+	return false;
+};
+
+const generateServerlessCloudFormationTemplate = async (filePath: string): Promise<boolean | string> => {
+	const isServerlessInstalled = await execShellCommand('which serverless');
+	if (isServerlessInstalled){
+		const command = `cd ${filePath} && serverless package`;
+		const result = await execShellCommand(command);
+		if (result){
+			return getServerlessCloudFormationTemplate(filePath);
+		}
+	}
+	return false;
+};
+
+const getServerlessCloudFormationTemplate = (filePath: string): string => {
+	const path = filePath.substring(0, filePath.lastIndexOf('/'));
+	console.log(path);
+	return `${path}/.serverless/cloudformation-template-update-stack.json`;
+};
+
+/**
+ * Executes a shell command and return it as a Promise.
+ * FROM: https://medium.com/@ali.dev/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
+ * @param cmd {string}
+ * @return {Promise<string>}
+ */
+function execShellCommand(cmd: string) {
+	const exec = require('child_process').exec;
+	return new Promise((resolve, reject) => {
+	 exec(cmd, (error: Error, stdout: string, stderr: string) => {
+		if (error) {
+		 console.warn(error);
+		}
+		resolve(stdout? stdout : stderr);
+	 });
+	});
+ }

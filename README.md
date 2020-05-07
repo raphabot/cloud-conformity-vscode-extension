@@ -33,17 +33,34 @@ If you need help on how to edit these settings, you can find more info [here](ht
 First, open VS Code Command Palette (⇧⌘P on Mac or Ctrl+⇧+P on Windows). Then:
 
 1 - You can scan the current open file through:
-> "Cloud Conformity: Scan Current Open File As a CloudFormation Template."
+> "Cloud One Conformity: Scan Current Open Template."
 
 2 - You can scan any other template right-clicking the file and selecting:
-> "Cloud Conformity: Scan Selected CloudFormation Template File"
+> "Cloud One Conformity: Scan Selected Template."
+
+#### Atention Serverless Framework Users!
+>If you are using the extension to scan Serverless Framework templates, make sure to package your application before running the scan.
 
 
 ## Known Issues
 
 None. Please, open an issue if you find one!
 
+## Contribute
+
+Pull Requests are encouraged!
+
 ## Release Notes
+
+### 0.2.0
+ - Serverless Framework support.
+
+### 0.1.3
+ - Proper message if the template is clean
+ - Order the detections by risk level.
+
+### 0.1.2
+- Bug fixes
 
 ### 0.1.1
 

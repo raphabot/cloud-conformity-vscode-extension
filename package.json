@@ -17,7 +17,7 @@
 	"repository": {
 		"url": "https://github.com/raphabot/cloud-conformity-vscode-extension"
 	},
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
@@ -34,11 +34,11 @@
 		"commands": [
 			{
 				"command": "extension.scan",
-				"title": "Cloud Conformity: Scan Current Open File As a CloudFormation Template."
+				"title": "Cloud One Conformity: Scan Current Open Template."
 			},
 			{
 				"command": "extension.scanfilefromcontext",
-				"title": "Cloud Conformity: Scan Selected CloudFormation Template File"
+				"title": "Cloud One Conformity: Scan Selected Template."
 			}
 		],
 		"menus": {
@@ -86,21 +86,21 @@
 	"devDependencies": {
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^5.2.7",
-		"@types/node": "^12.11.7",
+		"@types/node": "^12.12.37",
 		"@types/vscode": "^1.41.0",
 		"glob": "^7.1.5",
-		"mocha": "^6.2.2",
-		"ts-loader": "^6.2.1",
+		"mocha": "^6.2.3",
+		"ts-loader": "^6.2.2",
 		"tslint": "^5.20.0",
-		"typescript": "^3.6.4",
+		"typescript": "^3.8.3",
 		"vscode-test": "^1.2.2",
-		"webpack": "^4.42.0",
+		"webpack": "^4.43.0",
 		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
-		"axios": "^0.19.1",
+		"axios": "^0.19.2",
 		"cli-table": "^0.3.1",
-		"cloud-conformity": "^1.0.12",
+		"cloud-conformity": "^1.1.2",
 		"console.table": "^0.10.0",
 		"js-yaml": "^3.13.1",
 		"json2csv": "^4.5.4"
