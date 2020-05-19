@@ -1,23 +1,24 @@
 import * as vscode from 'vscode';
 import { CloudConformity } from 'cloud-conformity';
+import * as path from 'path';
 
-const VALID_OUTPUTS = ["table", "json", "csv"];
+const VALID_OUTPUTS = ["table", "json", "csv", "tab"];
 const KB = require('./kb.json');
 
 export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('extension.scan', async () => {
 		const filePath = getOpenFilePath();
-		logic(filePath);
+		logic(filePath, context);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('extension.scanfilefromcontext', (uri:vscode.Uri) => {
 		const filePath = uri.fsPath;
-		logic(filePath);
+		logic(filePath, context);
 	}));
 }
 
-const logic = async (path: string) => {
+const logic = async (path: string, context: vscode.ExtensionContext) => {
 	try {
 		const config = loadConfig();
 		if (!isConfigValid(config)){
@@ -49,7 +50,7 @@ const logic = async (path: string) => {
 			console.log(path);
 			const template = await fileContentFromPath(path);
 			const cc = new CloudConformity(config.region, config.key);
-			let result = await scanTemplate(cc, config.output, template);
+			let result = await scanTemplate(cc, config.output, template, context);
 			vscode.window.showInformationMessage("Template scanned.");
 			let outputChannel = vscode.window.createOutputChannel("output");
 			outputChannel.appendLine(result.message);
@@ -67,7 +68,7 @@ const logic = async (path: string) => {
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
-const scanTemplate = async (cc: CloudConformity, outputType: string, template: string) => {
+const scanTemplate = async (cc: CloudConformity, outputType: string, template: string, context: vscode.ExtensionContext) => {
 	let result = {
 		"message": "error"
 	};
@@ -75,7 +76,7 @@ const scanTemplate = async (cc: CloudConformity, outputType: string, template: s
 	// If there are findings
 	if (scan.failure.length){
 		const trimmed = trimResults(scan.failure);
-		result.message = parseResult(trimmed, outputType);
+		result.message = parseResult(trimmed, outputType, context);
 	}
 	else {
 		result.message = "This is a Well-Architected template. Great job!";
@@ -91,7 +92,7 @@ const trimResults = (data: [object]) => {
 				"resource": entry.attributes.resource,
 				"risk": entry.attributes['pretty-risk-level'],
 				"message": entry.attributes.message,
-				// "kb": getKBLink(entry)
+				"kb": getKBLink(entry)
 			};
 		})
 		.sort(compare);
@@ -116,7 +117,7 @@ const trimResults = (data: [object]) => {
   };
 };
 
-const parseResult = (data: any, outputType: string): string => {
+const parseResult = (data: any, outputType: string, context: vscode.ExtensionContext): string => {
 	let message = "";
 	switch (outputType) {
 		case "table":
@@ -127,6 +128,10 @@ const parseResult = (data: any, outputType: string): string => {
 			break;
 		case "json":
 			message = JSON.stringify(data, null, 2);
+			break;
+		case "tab":
+			outputAsNewTab(data, context);
+			message = "Results on new tab!";
 			break;
 		default:
 			message = parseToTable(data);
@@ -300,4 +305,116 @@ function execShellCommand(cmd: string) {
 		resolve(stdout? stdout : stderr);
 	 });
 	});
- }
+}
+
+const outputAsNewTab = (data: any, context: vscode.ExtensionContext) => {
+	// Create and show panel
+	const panel = vscode.window.createWebviewPanel(
+		'scanResult', // Identifies the type of the webview. Used internally
+		'Scan Result', // Title of the panel displayed to the user
+		vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+		{} // Webview options. More on these later.
+	);
+	// Get path to resource on disk
+	const cssDiskPath = vscode.Uri.file(
+		path.join(context.extensionPath, 'css', 'bootstrap.min.css')
+	);
+
+	// And get the special URI to use with the webview
+	const cssPath = panel.webview.asWebviewUri(cssDiskPath);
+
+	const html = `<!DOCTYPE html>
+	<html lang="en">
+	<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Scan Result</title>
+			<link rel="stylesheet" href="${cssPath}" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+	</head>
+	<body class="bg-dark text-white">
+		<div class="container bg-dark text-white">
+			<h2>Template Scanning Report</h2>
+			<br>
+			${generateTabHTML(data)}
+		</div>
+	</body>
+	</html>`;
+	console.log(html);
+	// And set its HTML content
+	panel.webview.html = html;
+};
+
+const generateTabHTML = (data: any) => {
+	const infoHtml = `
+	<h3>Summary</h3>
+	<table class="table table-dark">
+		<thead>
+			<tr>
+				<th scope="col">Risk</th>
+				<th scope="col">Findings</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th scope="row"><font color="ff0000">Extreme</font></th>
+				<td>${data.info.Extreme? data.info.Extreme : 0}</td>
+			</tr>
+			<tr>
+				<th scope="row"><font color="ff4200">Very High</font></th>
+				<td>${data.info['Very High']? data.info['Very High'] : 0}</td>
+			</tr>
+			<tr>
+				<th scope="row"><font color="ff8300">High</font></th>
+				<td>${data.info.High? data.info.High : 0}</td>
+			</tr>
+			<tr>
+				<th scope="row"><font color="yellow">Medium</font></th>
+				<td>${data.info.Medium? data.info.Medium : 0}</td>
+			</tr>
+			<tr>
+				<th scope="row"><font color="green">Low</font></th>
+				<td>${data.info.Low? data.info.Low : 0}</td>
+			</tr>
+		</tbody>
+	</table>
+	<br>`;
+	const resultsHtml = data.errors.reduce((html: string, detection: any) => {
+		return `${html}
+		<tr>
+			<th scope="row">${detection.resource}</th>
+			<td>${colorByRisk(detection.risk)}</td>
+			<td><a href="${detection.kb}">${detection.message}</a></td>
+		</tr>`;
+	}, `
+	<h3>Detections</h3>
+	<table class="table table-dark">
+	<thead>
+		<tr>
+			<th scope="col">Resource</th>
+			<th scope="col">Risk</th>
+			<th scope="col">Message</th>
+		</tr>
+	</thead>
+	<tbody>`) + `</tbody>
+	</table>`;
+	return infoHtml + resultsHtml;
+};
+
+const colorByRisk = (risk: string) => {
+	if (risk === 'Extreme'){
+		return `<font color="ff0000">Extreme</font>`;
+	}
+	if (risk === 'Very High'){
+		return `<font color="ff4200">Very High</font>`;
+	}
+	if (risk === 'High'){
+		return `<font color="ff8300">High</font>`;
+	}
+	if (risk === 'Medium'){
+		return `<font color="yellow">Medium</font>`;
+	}
+	else if (risk === 'Low') {
+		return `<font color="green">Low</font>`;
+	}
+	return risk;
+};

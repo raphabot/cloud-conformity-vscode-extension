@@ -24,7 +24,7 @@ This extension contributes the following settings:
 
 * `cc.apikey`: a string with your Cloud Conformity apikey
 * `cc.region`: Defaults to `us-west-2`. Change it to your Cloud Conformity used endpoint. 
-* `cc.output`: Defaults to `table`. Valid options are `table`, `json` or `csv`. 
+* `cc.output`: Defaults to `tab`. Valid options are `tab`, `table`, `json` or `csv`. 
 
 If you need help on how to edit these settings, you can find more info [here](https://code.visualstudio.com/docs/getstarted/settings).
 
@@ -52,8 +52,11 @@ Pull Requests are encouraged!
 
 ## Release Notes
 
+### 0.3.0
+ - "New Tab" output format supported and used by default. This allows for greater visibility of the findings, but also links the detections back to the Conformity Knowledge Base.
+
 ### 0.2.0
- - Serverless Framework support.
+ - Serverless Framework for AWS projects support.
 
 ### 0.1.3
  - Proper message if the template is clean
