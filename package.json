@@ -17,7 +17,7 @@
 	"repository": {
 		"url": "https://github.com/raphabot/cloud-conformity-vscode-extension"
 	},
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
@@ -59,12 +59,12 @@
 						"null"
 					],
 					"default": null,
-					"description": "Cloud Conformity API Key"
+					"description": "Cloud One Conformity API Key"
 				},
 				"cc.region": {
 					"type": "string",
 					"default": "us-west-2",
-					"description": "Cloud Conformity endpoint region."
+					"description": "Cloud One Conformity endpoint region."
 				},
 				"cc.output": {
 					"type": "string",

@@ -2,9 +2,9 @@
 [![Build Status](https://travis-ci.org/raphabot/cloud-conformity-vscode-extension.svg?branch=master)](https://travis-ci.org/raphabot/cloud-conformity-vscode-extension)
 [![Coverage Status](https://coveralls.io/repos/github/raphabot/cloud-conformity-vscode-extension/badge.svg?branch=master)](https://coveralls.io/github/raphabot/cloud-conformity-vscode-extension?branch=master)
 
-# Non Official Cloud Conformity VSCode Extension
+# Cloud One Conformity VSCode Extension
 
-This is a extension with a simple implementation of Cloud Conformity template scanner right from the IDE.
+This is a extension with a simple implementation of Cloud One Conformity template scanner right from the IDE.
 
 ![Extension working on VSCode](images/extension.gif)
 
@@ -16,7 +16,7 @@ More info about the scanner over [here](https://github.com/cloudconformity/docum
 
 ## Requirements
 
-You ***need*** to configure your API Key and you ***might*** need to configuer the endpoint region, as it defaults to us-west-2.  To do so, see the Extension Settings below:
+You ***need*** to configure your API Key and you ***might*** need to configure the endpoint region, as it defaults to us-west-2.  To do so, see the Extension Settings below:
 
 ## Extension Settings
 
@@ -39,7 +39,7 @@ First, open VS Code Command Palette (⇧⌘P on Mac or Ctrl+⇧+P on Windows). T
 > "Cloud One Conformity: Scan Selected Template."
 
 #### Atention Serverless Framework Users!
->If you are using the extension to scan Serverless Framework templates, make sure to package your application before running the scan.
+>If you are using the extension to scan Serverless Framework templates, make sure to package your application before running the scan. This capability is only available to AWS applications.
 
 
 ## Known Issues
@@ -51,6 +51,9 @@ None. Please, open an issue if you find one!
 Pull Requests are encouraged!
 
 ## Release Notes
+
+### 0.3.1
+ - Typos and branding corrections.
 
 ### 0.3.0
  - "New Tab" output format supported and used by default. This allows for greater visibility of the findings, but also links the detections back to the Conformity Knowledge Base.
