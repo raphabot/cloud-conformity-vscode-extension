@@ -25,6 +25,8 @@ This extension contributes the following settings:
 * `cc.apikey`: a string with your Cloud Conformity apikey
 * `cc.region`: Defaults to `us-west-2`. Change it to your Cloud Conformity used endpoint. 
 * `cc.output`: Defaults to `tab`. Valid options are `tab`, `table`, `json` or `csv`. 
+* `cc.defaultAccountId`: Optional. Dafaults to null. Set a default AccountID if you don't want to use the dafault.
+* `cc.defaultProfileId`: Optional. Dafaults to null. Set a default ProfileID if you don't want to use the dafault.
 
 If you need help on how to edit these settings, you can find more info [here](https://code.visualstudio.com/docs/getstarted/settings).
 
@@ -51,6 +53,9 @@ None. Please, open an issue if you find one!
 Pull Requests are encouraged!
 
 ## Release Notes
+
+### 0.4.0
+ - Support to scan templates against Account and Profile configurations.
 
 ### 0.3.1
  - Typos and branding corrections.

@@ -17,7 +17,7 @@
 	"repository": {
 		"url": "https://github.com/raphabot/cloud-conformity-vscode-extension"
 	},
-	"version": "0.3.1",
+	"version": "0.4.0",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
@@ -44,7 +44,7 @@
 		"menus": {
 			"explorer/context": [
 				{
-					"when": "resourceLangId == json || resourceLangId == yaml",
+					"when": "resourceLangId == json || resourceLangId == yaml || resourceLangId == yml || resourceLangId == template",
 					"command": "extension.scanfilefromcontext",
 					"group": "CC@1"
 				}
@@ -70,6 +70,22 @@
 					"type": "string",
 					"default": "tab",
 					"description": "Desired output method. Valid options: \"tab\", \"table\", \"json\" or \"csv\". Defaults to \"table\"."
+				},
+				"cc.defaultAccountId": {
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null,
+					"description": "Optional. Set a default AccountID if you don't want to use the dafault."
+				},
+				"cc.defaultProfileId": {
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null,
+					"description": "Optional. Set a default ProfileID if you don't want to use the dafault."
 				}
 			}
 		}

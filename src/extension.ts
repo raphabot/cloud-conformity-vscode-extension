@@ -50,7 +50,7 @@ const logic = async (path: string, context: vscode.ExtensionContext) => {
 			console.log(path);
 			const template = await fileContentFromPath(path);
 			const cc = new CloudConformity(config.region, config.key);
-			let result = await scanTemplate(cc, config.output, template, context);
+			let result = await scanTemplate(cc, config.output, template, config.profileId, config.accountId, context);
 			vscode.window.showInformationMessage("Template scanned.");
 			let outputChannel = vscode.window.createOutputChannel("output");
 			outputChannel.appendLine(result.message);
@@ -58,7 +58,7 @@ const logic = async (path: string, context: vscode.ExtensionContext) => {
 		}
 	} catch (error) {
 		console.error(error);
-		const message = "Extension is not configured.";
+		const message = "Something went wrong.";
 		console.error(message);
 		vscode.window.showInformationMessage(message);
 	}
@@ -68,11 +68,11 @@ const logic = async (path: string, context: vscode.ExtensionContext) => {
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
-const scanTemplate = async (cc: CloudConformity, outputType: string, template: string, context: vscode.ExtensionContext) => {
+const scanTemplate = async (cc: CloudConformity, outputType: string, template: string, profileId: string, accountId: string, context: vscode.ExtensionContext) => {
 	let result = {
 		"message": "error"
 	};
-	const scan = await cc.scanACloudFormationTemplateAndReturAsArrays(template);
+	const scan = await cc.scanACloudFormationTemplateAndReturAsArrays(template, "cloudformation-template", profileId, accountId);
 	// If there are findings
 	if (scan.failure.length){
 		const trimmed = trimResults(scan.failure);
@@ -208,11 +208,15 @@ const loadConfig = () => {
 		const key = config.get('apikey');
 		const region = config.get('region');
 		const output = config.get('output');
+		const accountId = config.get('defaultAccountId');
+		const profileId = config.get('defaultProfileId');
 		if ((key && key !== undefined) && (region && region !== undefined) && (output && output !== undefined)){
 			return {
 				key: String(key),
 				region: String(region),
-				output: String(output)
+				output: String(output),
+				...profileId && {profileId: String(profileId)},
+				...!profileId && accountId && {accountId: String(accountId)},
 			};
 		}
 		else{
