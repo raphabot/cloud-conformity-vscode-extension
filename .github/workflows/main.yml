@@ -42,7 +42,7 @@ jobs:
 
       # Bump version.
       - name: Bump Version.
-        run: npm --no-git-tag-version sversion patch
+        run: npm --no-git-tag-version version patch
 
       # Publish Extension.
       - name: Vscode release plugin
