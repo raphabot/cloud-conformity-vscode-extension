@@ -30,12 +30,9 @@ jobs:
         env:
           CONFORMITY_APIKEY: ${{ secrets.CONFORMITY_APIKEY }}
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-          cat src/kb.json
+      # Check if the rules file was generated.
+      - name: Check if the rules file was generated.
+        run: '[ -f src/kb.json ] && echo "Rules file was generated."'
 
       # Installs dependencies
       - name: Install Dependencies
@@ -43,6 +40,11 @@ jobs:
           npm ci
           npm run vscode:prepublish
 
+      # Bump version.
+      - name: Bump Version.
+        run: npm version patch
+
+      # Publish Extension.
       - name: Vscode release plugin
         uses: JCofman/vscodeaction@master
         env:
