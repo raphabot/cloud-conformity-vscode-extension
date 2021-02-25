@@ -84,7 +84,7 @@ const scanTemplate = async (cc: CloudConformity, outputType: string, template: s
 	return result;
 };
 
-const trimResults = (data: [object]) => {
+const trimResults = (data: any[]) => {
 	console.log(data);
 	const errors = data
 		.map(function(entry: any) { 
@@ -215,7 +215,7 @@ const loadConfig = () => {
 				key: String(key),
 				region: String(region),
 				output: String(output),
-				...profileId && {profileId: String(profileId)},
+				...(profileId as  object) && {profileId: String(profileId)},
 				...!profileId && accountId && {accountId: String(accountId)},
 			};
 		}

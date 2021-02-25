@@ -54,6 +54,12 @@ Pull Requests are encouraged!
 
 ## Release Notes
 
+### 0.5.2
+ - Adding support to newer rules.
+
+### 0.5.1
+ - Adding support to newer rules.
+
 ### 0.5.0
  - Using Actions to automatically update the Extension whenever new rules are made available.
  - Fixed a bug that the Knowledge Base url was broken for certain services.
