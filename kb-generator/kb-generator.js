@@ -42,7 +42,7 @@ const req = https.get(options,  (resp) => {
   // The whole response has been received. Print out the result.
   resp.on('end', () => {
     const rulesObj = JSON.parse(data);
-    //console.log(rulesObj);
+    //console.log(JSON.stringify(rulesObj, null, 2));
     generateKb(rulesObj);
   });
 
