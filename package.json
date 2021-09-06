@@ -114,7 +114,7 @@
 		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
-		"axios": "^0.19.2",
+		"axios": "^0.21.3",
 		"cli-table": "^0.3.1",
 		"cloud-conformity": "^1.1.2",
 		"console.table": "^0.10.0",
