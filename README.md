@@ -54,6 +54,9 @@ Pull Requests are encouraged!
 
 ## Release Notes
 
+### 0.6.0
+ - Added support for Terraform templates.
+
 ### 0.5.2
  - Adding support to newer rules.
 
