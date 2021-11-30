@@ -17,7 +17,7 @@
 	"repository": {
 		"url": "https://github.com/raphabot/cloud-conformity-vscode-extension"
 	},
-	"version": "0.5.2",
+	"version": "0.6.0",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
@@ -44,7 +44,7 @@
 		"menus": {
 			"explorer/context": [
 				{
-					"when": "resourceLangId == json || resourceLangId == yaml || resourceLangId == yml || resourceLangId == template",
+					"when": "resourceLangId == json || resourceLangId == yaml || resourceLangId == yml || resourceLangId == template || resourceLangId == tf",
 					"command": "extension.scanfilefromcontext",
 					"group": "CC@1"
 				}
@@ -114,9 +114,9 @@
 		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
-		"axios": "^0.19.2",
-		"cli-table": "^0.3.1",
-		"cloud-conformity": "^1.1.2",
+		"axios": "^0.24.0",
+		"cli-table": "^0.3.9",
+		"cloud-conformity": "^1.2.0",
 		"console.table": "^0.10.0",
 		"js-yaml": "^3.13.1",
 		"json2csv": "^4.5.4"

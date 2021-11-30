@@ -3,7 +3,6 @@ import { CloudConformity } from 'cloud-conformity';
 import * as path from 'path';
 
 const VALID_OUTPUTS = ["table", "json", "csv", "tab"];
-const KB = require('./kb.json');
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -18,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 }
 
-const logic = async (path: string, context: vscode.ExtensionContext) => {
+const logic = async (templatePath: string, context: vscode.ExtensionContext) => {
 	try {
 		const config = loadConfig();
 		if (!isConfigValid(config)){
@@ -26,8 +25,8 @@ const logic = async (path: string, context: vscode.ExtensionContext) => {
 			console.error(message);
 			vscode.window.showInformationMessage(message);
 		}
-		else if (path === null || path === ""){
-			console.log(path);
+		else if (templatePath === null || templatePath === ""){
+			console.log(templatePath);
 			const message = "Something went wrong.";
 			console.error(message);
 			vscode.window.showInformationMessage(message);
@@ -38,23 +37,38 @@ const logic = async (path: string, context: vscode.ExtensionContext) => {
 			vscode.window.showInformationMessage("Scanning template...");
 
 			// Check if Serverless Framework
-			if (checkIfServerlessFramework(path)){
-				path = getServerlessCloudFormationTemplate(path);
+			if (checkIfServerlessFramework(templatePath)){
+				templatePath = getServerlessCloudFormationTemplate(templatePath);
 				const fs = require("fs");
-				if (!fs.existsSync(path)){
+				if (!fs.existsSync(templatePath)){
 					const message = "You haven't packaged or deployed your Serverless application yet.";
 					vscode.window.showInformationMessage(message);
 					return;
 				}
 			}
-			console.log(path);
-			const template = await fileContentFromPath(path);
+			// Check if Terraform
+			let isTerraform = false;
+			if (path.extname(templatePath) === '.tf'){
+				const util = require('util');
+				const exec = util.promisify(require('child_process').exec);
+				const { planout, planerr } = await exec(`terraform -chdir=${path.dirname(templatePath)} plan --out .terraform/tfplan.binary`);
+				const { showout, showerr } = await exec(`terraform -chdir=${path.dirname(templatePath)} show -json .terraform/tfplan.binary > ${path.dirname(templatePath)}/.terraform/tfplan.json`);
+				templatePath = getTerraformTemplateOutputTemplate(templatePath);
+				isTerraform = true;
+			}
+			console.log(templatePath);
+			const template = await fileContentFromPath(templatePath);
 			const cc = new CloudConformity(config.region, config.key);
-			let result = await scanTemplate(cc, config.output, template, config.profileId, config.accountId, context);
+			let result = await scanTemplate(cc, config.output, template, isTerraform, config.profileId, config.accountId, context);
 			vscode.window.showInformationMessage("Template scanned.");
 			let outputChannel = vscode.window.createOutputChannel("output");
 			outputChannel.appendLine(result.message);
 			outputChannel.show(true);
+			if (isTerraform){
+				const { unlink } = require("fs").promises
+				unlink(`${path.dirname(templatePath)}/tfplan.binary`);
+				unlink(`${path.dirname(templatePath)}/tfplan.json`);
+			}
 		}
 	} catch (error) {
 		console.error(error);
@@ -68,11 +82,11 @@ const logic = async (path: string, context: vscode.ExtensionContext) => {
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
-const scanTemplate = async (cc: CloudConformity, outputType: string, template: string, profileId: string, accountId: string, context: vscode.ExtensionContext) => {
+const scanTemplate = async (cc: CloudConformity, outputType: string, template: string, tf: boolean, profileId: string, accountId: string, context: vscode.ExtensionContext) => {
 	let result = {
 		"message": "error"
 	};
-	const scan = await cc.scanACloudFormationTemplateAndReturAsArrays(template, "cloudformation-template", profileId, accountId);
+	const scan = tf? await cc.scanATerraformTemplateAndReturAsArrays(template, profileId, accountId) : await cc.scanACloudFormationTemplateAndReturAsArrays(template, profileId, accountId);
 	// If there are findings
 	if (scan.failure.length){
 		const trimmed = trimResults(scan.failure);
@@ -92,7 +106,7 @@ const trimResults = (data: any[]) => {
 				"resource": entry.attributes.resource,
 				"risk": entry.attributes['pretty-risk-level'],
 				"message": entry.attributes.message,
-				"kb": getKBLink(entry)
+				"kb": entry.attributes['resolution-page-url']
 			};
 		})
 		.sort(compare);
@@ -129,12 +143,10 @@ const parseResult = (data: any, outputType: string, context: vscode.ExtensionCon
 		case "json":
 			message = JSON.stringify(data, null, 2);
 			break;
-		case "tab":
+			default:
+			// Default, which is tab now.
 			outputAsNewTab(data, context);
 			message = "Results on new tab!";
-			break;
-		default:
-			message = parseToTable(data);
 			break;
 	}
 	return message;
@@ -174,7 +186,7 @@ const parseToCsv = (results: any) => {
     return csv;
   } catch (err) {
     console.error(err);
-    return err;
+    return 'Error parsing to CSV.';
   }
 };
 
@@ -216,11 +228,11 @@ const loadConfig = () => {
 				region: String(region),
 				output: String(output),
 				...(profileId as  object) && {profileId: String(profileId)},
-				...!profileId && accountId && {accountId: String(accountId)},
+				...(accountId as object) && {accountId: String(accountId)},
 			};
 		}
 		else{
-			throw new Error();
+			throw new Error('Please verify your Conformity extension settings.');
 		}
 	} catch (error) {
 		console.error(error);
@@ -262,10 +274,6 @@ const riskToNumber = (risk: string): number => {
 	}
 };
 
-const getKBLink = (check: any) => {
-	return KB.find((kb: { id: string; kb: string}) => kb.id === check.relationships.rule.data.id).kb;
-};
-
 const checkIfServerlessFramework = (filePath: string): boolean => {
 	const path = require('path');
 	const fileName = path.basename(filePath);
@@ -291,6 +299,12 @@ const getServerlessCloudFormationTemplate = (filePath: string): string => {
 	const path = filePath.substring(0, filePath.lastIndexOf('/'));
 	console.log(path);
 	return `${path}/.serverless/cloudformation-template-update-stack.json`;
+};
+
+const getTerraformTemplateOutputTemplate = (filePath: string): string => {
+	const path = filePath.substring(0, filePath.lastIndexOf('/'));
+	console.log(path);
+	return `${path}/.terraform/tfplan.json`;
 };
 
 /**
