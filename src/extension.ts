@@ -3,6 +3,8 @@ import { CloudConformity } from 'cloud-conformity';
 import * as path from 'path';
 
 const VALID_OUTPUTS = ["table", "json", "csv", "tab"];
+const outputChannel = vscode.window.createOutputChannel(`Conformity Template Scanner`);
+outputChannel.show(true);
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -18,16 +20,17 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 const logic = async (templatePath: string, context: vscode.ExtensionContext) => {
+	outputChannel.appendLine(`Trying to scan file in path ${templatePath}`);
 	try {
 		const config = loadConfig();
 		if (!isConfigValid(config)){
 			const message = "Extension is not configured.";
-			console.error(message);
+			outputChannel.appendLine(message);
 			vscode.window.showInformationMessage(message);
 		}
 		else if (templatePath === null || templatePath === ""){
-			console.log(templatePath);
-			const message = "Something went wrong.";
+			const message = `It seems like "${templatePath}" isn't a valid path.`;
+			outputChannel.appendLine(message);
 			console.error(message);
 			vscode.window.showInformationMessage(message);
 		}
@@ -35,13 +38,16 @@ const logic = async (templatePath: string, context: vscode.ExtensionContext) => 
 		else{
 			// Display a message box to the user
 			vscode.window.showInformationMessage("Scanning template...");
+			outputChannel.appendLine(`Scanning template...`);
 
 			// Check if Serverless Framework
 			if (checkIfServerlessFramework(templatePath)){
+				outputChannel.appendLine(`It is a Serverless framework template!`);
 				templatePath = getServerlessCloudFormationTemplate(templatePath);
 				const fs = require("fs");
 				if (!fs.existsSync(templatePath)){
 					const message = "You haven't packaged or deployed your Serverless application yet.";
+					outputChannel.appendLine(message);
 					vscode.window.showInformationMessage(message);
 					return;
 				}
@@ -49,20 +55,21 @@ const logic = async (templatePath: string, context: vscode.ExtensionContext) => 
 			// Check if Terraform
 			let isTerraform = false;
 			if (path.extname(templatePath) === '.tf'){
+				outputChannel.appendLine(`It is a Terraform template!`);
 				const util = require('util');
 				const exec = util.promisify(require('child_process').exec);
 				const templateFolder = path.dirname(templatePath);
 				const { planout, planerr } = await exec(`terraform -chdir=${templateFolder} plan --out ${path.join(templateFolder, '.terraform', 'tfplan.binary')}`);
 				const { showout, showerr } = await exec(`terraform -chdir=${templateFolder} show -json ${path.join(templateFolder, '.terraform', 'tfplan.binary')} > ${path.join(templateFolder, '.terraform', 'tfplan.json')}`);
+				outputChannel.appendLine(`${planout} ${planerr} ${showout} ${showerr}`);
 				templatePath = getTerraformTemplateOutputTemplate(templatePath);
+				outputChannel.appendLine(`Terraform temp json template path is ${templatePath}`);
 				isTerraform = true;
 			}
-			console.log(templatePath);
 			const template = await fileContentFromPath(templatePath);
 			const cc = new CloudConformity(config.region, config.key);
 			let result = await scanTemplate(cc, config.output, template, isTerraform, config.profileId, config.accountId, context);
 			vscode.window.showInformationMessage("Template scanned.");
-			let outputChannel = vscode.window.createOutputChannel("output");
 			outputChannel.appendLine(result.message);
 			outputChannel.show(true);
 			if (isTerraform){
