@@ -51,8 +51,9 @@ const logic = async (templatePath: string, context: vscode.ExtensionContext) => 
 			if (path.extname(templatePath) === '.tf'){
 				const util = require('util');
 				const exec = util.promisify(require('child_process').exec);
-				const { planout, planerr } = await exec(`terraform -chdir=${path.dirname(templatePath)} plan --out .terraform/tfplan.binary`);
-				const { showout, showerr } = await exec(`terraform -chdir=${path.dirname(templatePath)} show -json .terraform/tfplan.binary > ${path.dirname(templatePath)}/.terraform/tfplan.json`);
+				const templateFolder = path.dirname(templatePath);
+				const { planout, planerr } = await exec(`terraform -chdir=${templateFolder} plan --out ${path.join(templateFolder, '.terraform', 'tfplan.binary')}`);
+				const { showout, showerr } = await exec(`terraform -chdir=${templateFolder} show -json ${path.join(templateFolder, '.terraform', 'tfplan.binary')} > ${path.join(templateFolder, '.terraform', 'tfplan.json')}`);
 				templatePath = getTerraformTemplateOutputTemplate(templatePath);
 				isTerraform = true;
 			}
@@ -66,8 +67,9 @@ const logic = async (templatePath: string, context: vscode.ExtensionContext) => 
 			outputChannel.show(true);
 			if (isTerraform){
 				const { unlink } = require("fs").promises
-				unlink(`${path.dirname(templatePath)}/tfplan.binary`);
-				unlink(`${path.dirname(templatePath)}/tfplan.json`);
+				const templateFolder = path.dirname(templatePath);
+				unlink(path.join(templateFolder, 'tfplan.binary'));
+				unlink(path.join(templateFolder, 'tfplan.json'));
 			}
 		}
 	} catch (error) {
