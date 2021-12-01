@@ -62,7 +62,7 @@ const logic = async (templatePath: string, context: vscode.ExtensionContext) => 
 				const { planout, planerr } = await exec(`terraform -chdir=${templateFolder} plan --out ${path.join(templateFolder, '.terraform', 'tfplan.binary')}`);
 				const { showout, showerr } = await exec(`terraform -chdir=${templateFolder} show -json ${path.join(templateFolder, '.terraform', 'tfplan.binary')} > ${path.join(templateFolder, '.terraform', 'tfplan.json')}`);
 				outputChannel.appendLine(`${planout} ${planerr} ${showout} ${showerr}`);
-				templatePath = getTerraformTemplateOutputTemplate(templatePath);
+				templatePath = getTerraformTemplateOutputTemplate(templateFolder);
 				outputChannel.appendLine(`Terraform temp json template path is ${templatePath}`);
 				isTerraform = true;
 			}
@@ -80,9 +80,10 @@ const logic = async (templatePath: string, context: vscode.ExtensionContext) => 
 			}
 		}
 	} catch (error) {
-		console.error(error);
+		if (error instanceof Error){
+			vscode.window.showInformationMessage(error.message);
+		}
 		const message = "Something went wrong.";
-		console.error(message);
 		vscode.window.showInformationMessage(message);
 	}
 	
@@ -305,15 +306,13 @@ const generateServerlessCloudFormationTemplate = async (filePath: string): Promi
 };
 
 const getServerlessCloudFormationTemplate = (filePath: string): string => {
-	const path = filePath.substring(0, filePath.lastIndexOf('/'));
-	console.log(path);
-	return `${path}/.serverless/cloudformation-template-update-stack.json`;
+	const path = require('path');
+	const templateFolder = path.dirname(filePath);
+	return path.join(templateFolder, '.serverless', 'cloudformation-template-update-stack.json');
 };
 
-const getTerraformTemplateOutputTemplate = (filePath: string): string => {
-	const path = filePath.substring(0, filePath.lastIndexOf('/'));
-	console.log(path);
-	return `${path}/.terraform/tfplan.json`;
+const getTerraformTemplateOutputTemplate = (templateFolder: string): string => {
+	return path.join(templateFolder, '.terraform', 'tfplan.json');
 };
 
 /**

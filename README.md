@@ -54,6 +54,9 @@ Pull Requests are encouraged!
 
 ## Release Notes
 
+### 0.6.2
+ - Added logging for troubleshooting.
+
 ### 0.6.1
  - Fix to support Windows for Terraform scanning.
 
