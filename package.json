@@ -1,7 +1,7 @@
 {
 	"name": "cc-template-scanner",
-	"displayName": "Cloud Conformity Template Scanner Extension",
-	"description": "Cloud Conformity Template Scanner Extension",
+	"displayName": "Cloud One - Conformity Template Scanner Extension",
+	"description": "Cloud One - Conformity Template Scanner Extension",
 	"author": {
 		"name": "Raphael Bottino",
 		"email": "raphabot@gmail.com"
@@ -11,13 +11,15 @@
 		"Cloud One",
 		"Cloud Conformity",
 		"CloudFormation",
-		"Trend Micro"
+		"Trend Micro",
+		"Terraform",
+		"Serverless Framework"
 	],
 	"publisher": "raphaelbottino",
 	"repository": {
 		"url": "https://github.com/raphabot/cloud-conformity-vscode-extension"
 	},
-	"version": "0.6.2",
+	"version": "0.6.3",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
@@ -77,7 +79,7 @@
 						"null"
 					],
 					"default": null,
-					"description": "Optional. Set a default AccountID if you don't want to use the dafault."
+					"description": "Optional. Set a default AccountID if you don't want to use the default."
 				},
 				"cc.defaultProfileId": {
 					"type": [
@@ -85,7 +87,7 @@
 						"null"
 					],
 					"default": null,
-					"description": "Optional. Set a default ProfileID if you don't want to use the dafault."
+					"description": "Optional. Set a default ProfileID if you don't want to use the default."
 				}
 			}
 		}
